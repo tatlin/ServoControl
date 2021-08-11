@@ -84,9 +84,9 @@ RED="\033[1;31m";BLUE="\033[1;34m";CYAN="\033[1;36m";GREEN="\033[0;32m";RESET="\
 # serialPort on the Mac it is something like this, on WIN is something like: COMn
 # in the Arduino IDE on your computer you can see the serial port name in the menubar -> Tools -> port
 serialPort = '/dev/tty.wchusbserialfa130'
-serverAdr = "192.168.0.11"                                     # ip address of your computer
+serverAdr = "192.168.1.237"                                     # ip address of your computer
 serverPort = 8000                                               # port number used on your computer
-clientAdr = "192.168.0.102"                                     # ip address of your phone, find it on touchOSC
+clientAdr = "192.168.1.237"                                     # ip address of your phone, find it on touchOSC
 clientPort = 9000                                               # port number of touchOSC on your phone
 data = serial.Serial(serialPort, 9600, timeout=1)               # data send to Arduino via serial port (UBS connetion)
 ''' 
