@@ -9,6 +9,9 @@ import serial
 from pythonosc import dispatcher
 from pythonosc import osc_server, udp_client
 
+LOCAL_IP_ADDRESS = "10.10.1.69"
+IPHONE_IP_ADDRESS = "10.10.1.185"
+
 def print_volume_handler(unused_addr, args, volume):
   print("[{0}] ~ {1}".format(args[0], volume))
 
@@ -28,45 +31,53 @@ def send_back(inData):
       client_local.send_message("/1/rotary1", inData)
       print("sent message {0}".format(inData))
 
+def send_serial(inData, path):
+    pos = int(800 * inData)                                     # 800 steps
+    servo_msg = chr(pos)                                        # convert integer -> ascii = chr(num)
+    print("{0} {1}  {2}".format(path, str(inData), str(pos)))           # other way around:  ascii -> integer = ord(num)
+    #myLabel = 'angle: ' + str(pos)                              # update the text label for the virtual environment
+    data.write(servo_msg.encode())                                       #send the angle to the Arduino through serial port
+
 
 def servo_call(unused_addr, args, volume):                         # read incomming data from touchOSC
   
     path = unused_addr.split("/")[2]
-    print("[{0}] ~ {1} ~ {2}".format(args[0], path, volume))    
+    print("servo_call [{0}] ~ {1} ~ {2}".format(args[0], path, volume))    
     if path == "rotary1":                                             # if control is push button on the phone
         inData = volume                                            # set value, 0 = 0 degrees, 1 = 180 degrees
-        send_back(inData)                             # from the phone
+        send_back(inData)
+        send_serial(inData, path)                             # from the phone
     if path == "push1":                                             # if control is push button on the phone
         inData = 0.0                                              # set value, 0 = 0 degrees, 1 = 180 degrees
         send_back(inData)
+        send_serial(inData, path)
     if path == "push2":
         inData = 0.25
         send_back(inData)
+        send_serial(inData, path)
     if path == "push3":
         inData = 0.5
         send_back(inData)
+        send_serial(inData, path)
     if path == "push4":
         inData = 0.75
         send_back(inData)
+        send_serial(inData, path)
     if path == "push5":
         inData = 1.0
         send_back(inData)
+        send_serial(inData, path)
 
-    pos = int(180 * inData)                                     # map 0..1 -> 0..180 degrees
-    servo_msg = chr(pos)                                        # convert integer -> ascii = chr(num)
-    #print "%s => %.2f  %s" % (path, inData, str(pos))           # other way around:  ascii -> integer = ord(num)
-    #myLabel = 'angle: ' + str(pos)                              # update the text label for the virtual environment
-    data.write(servo_msg.encode())                                       #send the angle to the Arduino through serial port
 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--ip",
-      default="192.168.1.237", help="The ip to listen on")
+      default=LOCAL_IP_ADDRESS, help="The ip to listen on")
   parser.add_argument("--port",
       type=int, default=5005, help="The port to listen on")
   args = parser.parse_args()
-  serialPort = '/dev/cu.Bluetooth-Incoming-Port'
+  serialPort = '/dev/tty.usbmodem14101'
   data = serial.Serial(serialPort, 9600, timeout=1)               # data send to Arduino via serial port (UBS connetion)
 
 
@@ -84,7 +95,9 @@ if __name__ == "__main__":
   server = osc_server.ThreadingOSCUDPServer(
       (args.ip, args.port), dispatcher)
   print("Serving on {}".format(server.server_address))
-  client_iphone = udp_client.SimpleUDPClient("192.168.1.25", 9000) #send back
-  client_local = udp_client.SimpleUDPClient("192.168.1.237", 9000) #send back
+  #client_iphone = udp_client.SimpleUDPClient("192.168.1.25", 9000) #send back
+  #client_local = udp_client.SimpleUDPClient("192.168.1.237", 9000) #send back
+  client_iphone = udp_client.SimpleUDPClient(IPHONE_IP_ADDRESS, 9000) #send back
+  client_local = udp_client.SimpleUDPClient(LOCAL_IP_ADDRESS, 9000) #send back
   
   server.serve_forever()

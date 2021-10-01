@@ -12,7 +12,7 @@ from pythonosc import udp_client
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("--ip", default="192.168.1.237",
+  parser.add_argument("--ip", default="10.10.1.69",
       help="The ip of the OSC server")
   parser.add_argument("--port", type=int, default=5005,
       help="The port the OSC server is listening on")
